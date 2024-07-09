@@ -14,6 +14,16 @@ if(navigator.geolocation){
         maximumAge:0
     }
 );
-
-L.map("map").setView([0,0],10);
 }
+const map=L.map("map").setView([0,0],10);
+
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
+    attribution:"LiveTrace"
+}).addTo(map)
+
+const markers={ };
+
+socket.on("recieve-location",(data)=>{
+    const{id,latitude,longitude}=data;
+    map.setView([latitude,longitude]);
+})
