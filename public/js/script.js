@@ -31,7 +31,12 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
 
 const markers = {};
 const customMarkers = {};
+const geofence = { lat: 37.7749, lng: -122.4194, radius: 5000 }; // Example geofence around San Francisco
 
+function isInsideGeofence(lat, lng, geofence) {
+    const distance = map.distance([lat, lng], [geofence.lat, geofence.lng]);
+    return distance <= geofence.radius;
+}
 
 socket.on("receive-location", (data) => {
     const { id, username, latitude, longitude } = data;
@@ -40,6 +45,12 @@ socket.on("receive-location", (data) => {
         markers[id].setLatLng([latitude, longitude]);
     } else {
         markers[id] = L.marker([latitude, longitude]).addTo(map).bindPopup(username);
+    }
+
+    if (isInsideGeofence(latitude, longitude, geofence)) {
+        document.getElementById('geofence-alert').innerText = `${username} is inside the geofence!`;
+    } else {
+        document.getElementById('geofence-alert').innerText = `${username} is outside the geofence!`;
     }
 });
 
