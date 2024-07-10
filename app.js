@@ -14,16 +14,20 @@ const users = {};
 io.on('connection', function (socket) {
     socket.on('set-username', function (username) {
         users[socket.id] = username;
-        io.emit('update-status', Object.values(users).join(', ') + ' is online');
+        io.emit('update-status', Object.values(users).join(', ') + ' are online');
     });
 
     socket.on("send-location", function (data) {
         io.emit("receive-location", { id: socket.id, ...data });
     });
 
+    socket.on("send-message", function (data) {
+        io.emit('receive-message', data);
+    });
+
     socket.on("disconnect", function () {
         delete users[socket.id];
-        io.emit('update-status', Object.values(users).join(', ') + ' is online');
+        io.emit('update-status', Object.values(users).join(', ') + ' are online');
         io.emit("user-disconnected", socket.id);
     });
 });

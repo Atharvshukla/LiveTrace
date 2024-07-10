@@ -1,13 +1,17 @@
-*{
-    margin:0;
-    padding: 0;
-    box-sizing: border-box;
+body {
+    font-family: Arial, sans-serif;
 }
-html,body{
-    width:100%;
-    height:100%;
-}
-#map{
+
+#map {
     width: 100%;
-    height: 100%;
+    height: 500px;
+    margin: 20px 0;
+}
+
+#status, #geofence-alert, #messages {
+    margin: 10px 0;
+}
+
+#lat, #lng, #set-marker, #message, #send-message {
+    margin-top: 10px;
 }
