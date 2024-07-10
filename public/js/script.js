@@ -30,6 +30,8 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
 }).addTo(map);
 
 const markers = {};
+const customMarkers = {};
+
 
 socket.on("receive-location", (data) => {
     const { id, username, latitude, longitude } = data;
@@ -46,8 +48,36 @@ socket.on("user-disconnected", (id) => {
         map.removeLayer(markers[id]);
         delete markers[id];
     }
+    if (customMarkers[id]) {
+        map.removeLayer(customMarkers[id]);
+        delete customMarkers[id];
+    }
 });
 
 socket.on("update-status", (status) => {
     document.getElementById('status').innerHTML = status;
+});
+
+document.getElementById('set-marker').addEventListener('click', () => {
+    const lat = parseFloat(document.getElementById('lat').value);
+    const lng = parseFloat(document.getElementById('lng').value);
+    if (!isNaN(lat) && !isNaN(lng)) {
+        if (customMarkers[socket.id]) {
+            customMarkers[socket.id].setLatLng([lat, lng]);
+        } else {
+            customMarkers[socket.id] = L.marker([lat, lng], {icon: L.icon({iconUrl: 'marker.webp'})}).addTo(map).bindPopup('Custom Marker').openPopup();
+        }
+    }
+});
+
+document.getElementById('send-message').addEventListener('click', () => {
+    const message = document.getElementById('message').value;
+    socket.emit('send-message', { username, message });
+});
+
+socket.on('receive-message', (data) => {
+    const messageBox = document.getElementById('messages');
+    const messageElement = document.createElement('div');
+    messageElement.innerText = `${data.username}: ${data.message}`;
+    messageBox.appendChild(messageElement);
 });
