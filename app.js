@@ -9,16 +9,26 @@ const io = socketio(server);
 app.set('view engine', 'ejs');
 app.use(express.static(path.join(__dirname, 'public')));
 
-io.on('connection', function(socket) {
-    socket.on("send-location",function(data){
-        io.emit("recieve-location",{id:socket.id,...data})
+const users = {};
+
+io.on('connection', function (socket) {
+    socket.on('set-username', function (username) {
+        users[socket.id] = username;
+        io.emit('update-status', Object.values(users).join(', ') + ' is online');
     });
-    socket.on("disconnect",function(){
-        io.emit("user-disconnected",socket.id)
-    })
+
+    socket.on("send-location", function (data) {
+        io.emit("receive-location", { id: socket.id, ...data });
+    });
+
+    socket.on("disconnect", function () {
+        delete users[socket.id];
+        io.emit('update-status', Object.values(users).join(', ') + ' is online');
+        io.emit("user-disconnected", socket.id);
+    });
 });
 
-app.get('/', function(req, res) {
+app.get('/', function (req, res) {
     res.render('index');
 });
 
