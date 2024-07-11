@@ -78,7 +78,8 @@ socket.on("update-status", (status) => {
     document.getElementById('status').innerHTML = status;
 });
 
-document.getElementById('set-marker').addEventListener('click', () => {
+document.getElementById('set-marker').addEventListener('click', (e) => {
+    e.preventDefault(); // Prevent form submission and page reload
     const lat = parseFloat(document.getElementById('lat').value);
     const lng = parseFloat(document.getElementById('lng').value);
     if (!isNaN(lat) && !isNaN(lng)) {
@@ -93,7 +94,8 @@ document.getElementById('set-marker').addEventListener('click', () => {
     }
 });
 
-document.getElementById('set-geofence').addEventListener('click', () => {
+document.getElementById('set-geofence').addEventListener('click', (e) => {
+    e.preventDefault(); // Prevent form submission and page reload
     const lat = parseFloat(document.getElementById('geofence-lat').value);
     const lng = parseFloat(document.getElementById('geofence-lng').value);
     const radius = parseFloat(document.getElementById('geofence-radius').value);
@@ -106,7 +108,8 @@ document.getElementById('set-geofence').addEventListener('click', () => {
     }
 });
 
-document.getElementById('send-message').addEventListener('click', () => {
+document.getElementById('send-message').addEventListener('click', (e) => {
+    e.preventDefault(); // Prevent form submission and page reload
     const message = document.getElementById('message').value;
     socket.emit('send-message', { username, message });
 });
