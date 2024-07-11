@@ -1,5 +1,6 @@
 const socket = io();
 let username = "";
+let currentLocationMarker = null;
 
 document.getElementById('username').addEventListener('change', (e) => {
     username = e.target.value;
@@ -49,6 +50,10 @@ socket.on("receive-location", (data) => {
         markers[id].on('click', () => {
             markers[id].openPopup();
         });
+    }
+
+    if (id === socket.id) {
+        currentLocationMarker = markers[id];
     }
 
     if (isInsideGeofence(latitude, longitude, geofence)) {
@@ -112,3 +117,31 @@ socket.on('receive-message', (data) => {
     messageElement.innerText = `${data.username}: ${data.message}`;
     messageBox.appendChild(messageElement);
 });
+
+L.Control.CurrentLocation = L.Control.extend({
+    onAdd: function(map) {
+        const btn = L.DomUtil.create('button');
+        btn.innerHTML = '📍';
+        btn.className = 'leaflet-bar leaflet-control leaflet-control-custom';
+        btn.style.cursor = 'pointer';
+
+        btn.onclick = function() {
+            if (currentLocationMarker) {
+                map.setView(currentLocationMarker.getLatLng(), 16);
+                currentLocationMarker.openPopup();
+            }
+        };
+
+        return btn;
+    },
+
+    onRemove: function(map) {
+
+    }
+});
+
+L.control.currentLocation = function(opts) {
+    return new L.Control.CurrentLocation(opts);
+}
+
+L.control.currentLocation({ position: 'bottomright' }).addTo(map);
