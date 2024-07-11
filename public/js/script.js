@@ -31,7 +31,8 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
 
 const markers = {};
 const customMarkers = {};
-const geofence = { lat: 37.7749, lng: -122.4194, radius: 5000 }; // Example geofence around San Francisco
+let geofence = { lat: 37.7749, lng: -122.4194, radius: 5000 }; // Default geofence around San Francisco
+let geofenceCircle = L.circle([geofence.lat, geofence.lng], { radius: geofence.radius }).addTo(map);
 
 function isInsideGeofence(lat, lng, geofence) {
     const distance = map.distance([lat, lng], [geofence.lat, geofence.lng]);
@@ -42,9 +43,12 @@ socket.on("receive-location", (data) => {
     const { id, username, latitude, longitude } = data;
     map.setView([latitude, longitude]);
     if (markers[id]) {
-        markers[id].setLatLng([latitude, longitude]);
+        markers[id].setLatLng([latitude, longitude]).bindPopup(`You are here: ${username}`);
     } else {
-        markers[id] = L.marker([latitude, longitude]).addTo(map).bindPopup(username);
+        markers[id] = L.marker([latitude, longitude]).addTo(map).bindPopup(`You are here: ${username}`);
+        markers[id].on('click', () => {
+            markers[id].openPopup();
+        });
     }
 
     if (isInsideGeofence(latitude, longitude, geofence)) {
@@ -74,10 +78,26 @@ document.getElementById('set-marker').addEventListener('click', () => {
     const lng = parseFloat(document.getElementById('lng').value);
     if (!isNaN(lat) && !isNaN(lng)) {
         if (customMarkers[socket.id]) {
-            customMarkers[socket.id].setLatLng([lat, lng]);
+            customMarkers[socket.id].setLatLng([lat, lng]).bindPopup(`Your custom marker: ${username}`);
         } else {
-            customMarkers[socket.id] = L.marker([lat, lng], {icon: L.icon({iconUrl: 'marker.webp'})}).addTo(map).bindPopup('Custom Marker').openPopup();
+            customMarkers[socket.id] = L.marker([lat, lng], { icon: L.icon({ iconUrl: 'path/to/custom-marker-icon.png' }) }).addTo(map).bindPopup(`Your custom marker: ${username}`);
+            customMarkers[socket.id].on('click', () => {
+                customMarkers[socket.id].openPopup();
+            });
         }
+    }
+});
+
+document.getElementById('set-geofence').addEventListener('click', () => {
+    const lat = parseFloat(document.getElementById('geofence-lat').value);
+    const lng = parseFloat(document.getElementById('geofence-lng').value);
+    const radius = parseFloat(document.getElementById('geofence-radius').value);
+    if (!isNaN(lat) && !isNaN(lng) && !isNaN(radius)) {
+        geofence = { lat, lng, radius };
+        if (geofenceCircle) {
+            map.removeLayer(geofenceCircle);
+        }
+        geofenceCircle = L.circle([geofence.lat, geofence.lng], { radius: geofence.radius }).addTo(map);
     }
 });
 
