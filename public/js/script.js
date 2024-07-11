@@ -42,7 +42,7 @@ function isInsideGeofence(lat, lng, geofence) {
 
 socket.on("receive-location", (data) => {
     const { id, username, latitude, longitude } = data;
-    map.setView([latitude, longitude]);
+
     if (markers[id]) {
         markers[id].setLatLng([latitude, longitude]).bindPopup(`You are here: ${username}`);
     } else {
@@ -54,12 +54,14 @@ socket.on("receive-location", (data) => {
 
     if (id === socket.id) {
         currentLocationMarker = markers[id];
-    }
+        map.setView([latitude, longitude]);
 
-    if (isInsideGeofence(latitude, longitude, geofence)) {
-        document.getElementById('geofence-alert').innerText = `${username} is inside the geofence!`;
-    } else {
-        document.getElementById('geofence-alert').innerText = `${username} is outside the geofence!`;
+        // Check geofence status for the current user
+        if (isInsideGeofence(latitude, longitude, geofence)) {
+            document.getElementById('geofence-alert').innerText = `${username} is inside the geofence!`;
+        } else {
+            document.getElementById('geofence-alert').innerText = `${username} is outside the geofence!`;
+        }
     }
 });
 
@@ -118,6 +120,7 @@ socket.on('receive-message', (data) => {
     messageBox.appendChild(messageElement);
 });
 
+// Add custom control for returning to current location
 L.Control.CurrentLocation = L.Control.extend({
     onAdd: function(map) {
         const btn = L.DomUtil.create('button');
@@ -136,10 +139,11 @@ L.Control.CurrentLocation = L.Control.extend({
     },
 
     onRemove: function(map) {
-
+        // Nothing to do here
     }
 });
 
+// Add the custom control to the map
 L.control.currentLocation = function(opts) {
     return new L.Control.CurrentLocation(opts);
 }
