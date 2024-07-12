@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+\<!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" integrity="sha512-h9FcoyWjHcOcmEVkxOfTLnmZFWIH0iZhZT1H2TbOq55xssQGEJHEaIm+PgoUaZbRvQTNTluNOEfb1ZRy6D3BOw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
-        /* Additional CSS for responsive navigation */
         nav {
             background-color: #4CAF50;
             padding: 1em;
@@ -39,11 +38,11 @@
             font-size: 1.2em;
             padding: 0.5em 1em;
             border-radius: 5px;
-            transition: background-color 0.3s, color 0.3s; /* Smooth transition for hover effect */
+            transition: background-color 0.3s, color 0.3s;
         }
 
         nav a:hover {
-            background-color: #45a049; /* Darker shade of green on hover */
+            background-color: #45a049; 
         }
 
         #map {
@@ -60,8 +59,8 @@
             display: none;
             justify-content: center;
             align-items: center;
-            background-color: rgba(0, 0, 0, 0.5); /* Transparent black overlay */
-            z-index: 1000; /* Ensure it's above other content */
+            background-color: rgba(0, 0, 0, 0.5); 
+            z-index: 1000; 
         }
 
         .form-container {
@@ -98,25 +97,38 @@
         </ul>
     </nav>
 
-    <!-- Transparent form overlay -->
-    <div class="form-overlay" id="formOverlay">
+
+    <div class="form-overlay" id="markerFormOverlay">
         <div class="form-container">
-            <span class="form-close" id="closeForm">&times;</span>
+            <span class="form-close" id="closeMarkerForm">&times;</span>
             <form id="markerForm" class="form-section">
                 <input type="number" id="lat" placeholder="Latitude" step="any" required>
                 <input type="number" id="lng" placeholder="Longitude" step="any" required>
-                <button type="submit"id="set-marker">Set Marker</button>
+                <button type="submit" id="set-marker">Set Marker</button>
             </form>
+        </div>
+    </div>
+
+
+    <div class="form-overlay" id="geofenceFormOverlay">
+        <div class="form-container">
+            <span class="form-close" id="closeGeofenceForm">&times;</span>
             <form id="geofenceForm" class="form-section">
                 <input type="number" id="geofence-lat" placeholder="Geofence Latitude" step="any" required>
                 <input type="number" id="geofence-lng" placeholder="Geofence Longitude" step="any" required>
                 <input type="number" id="geofence-radius" placeholder="Geofence Radius (meters)" step="any" required>
                 <button type="submit" id="set-geofence">Set Geofence</button>
             </form>
+        </div>
+    </div>
+
+    <div class="form-overlay" id="messageFormOverlay">
+        <div class="form-container">
+            <span class="form-close" id="closeMessageForm">&times;</span>
             <form id="messageForm" class="form-section">
                 <input type="text" id="message" placeholder="Enter a message">
                 <button id="send-message">Send Message</button>
-                  <div id="messages"></div>
+                <div id="messages"></div>
             </form>
         </div>
     </div>
@@ -124,72 +136,88 @@
     <input type="text" id="username" placeholder="Enter your name">
     <div id="status"></div>
     <div id="map"></div>
-
     <div id="geofence-alert"></div>
-
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" integrity="sha512-puJW3E/qXDqYp9IfhAI54BJEaWIfloJ7JWs7OeD5i6ruC9JZL1gERT1wjtwXFlh7CjE7ZJ+/vcRZRkIYIb6p4g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js" integrity="sha384-2huaZvOR9iDzHqslqwpR87isEmrfxqyWOF7hr7BY6KG0+hVKLoEXMPUJw3ynWuhO" crossorigin="anonymous"></script>
     <script src="/js/script.js"></script>
 
     <script>
-        // JavaScript to toggle form overlay
+   
         document.addEventListener('DOMContentLoaded', function() {
-            const formOverlay = document.getElementById('formOverlay');
-            const closeForm = document.getElementById('closeForm');
+            const markerFormOverlay = document.getElementById('markerFormOverlay');
+            const geofenceFormOverlay = document.getElementById('geofenceFormOverlay');
+            const messageFormOverlay = document.getElementById('messageFormOverlay');
+
+            const closeMarkerForm = document.getElementById('closeMarkerForm');
+            const closeGeofenceForm = document.getElementById('closeGeofenceForm');
+            const closeMessageForm = document.getElementById('closeMessageForm');
+
             const setMarkerLink = document.getElementById('set-marker-link');
             const setGeofenceLink = document.getElementById('set-geofence-link');
             const sendMessageLink = document.getElementById('send-message-link');
+
             const markerForm = document.getElementById('markerForm');
             const geofenceForm = document.getElementById('geofenceForm');
             const messageForm = document.getElementById('messageForm');
 
-            // Open forms on link click
+    
             setMarkerLink.addEventListener('click', function(e) {
                 e.preventDefault();
-                formOverlay.style.display = 'flex';
+                markerFormOverlay.style.display = 'flex';
                 markerForm.style.display = 'block';
             });
 
             setGeofenceLink.addEventListener('click', function(e) {
                 e.preventDefault();
-                formOverlay.style.display = 'flex';
+                geofenceFormOverlay.style.display = 'flex';
                 geofenceForm.style.display = 'block';
             });
 
             sendMessageLink.addEventListener('click', function(e) {
                 e.preventDefault();
-                formOverlay.style.display = 'flex';
+                messageFormOverlay.style.display = 'flex';
                 messageForm.style.display = 'block';
             });
 
-            // Close form overlay on close button click
-            closeForm.addEventListener('click', function() {
-                formOverlay.style.display = 'none';
-                // Reset forms if needed
+
+            closeMarkerForm.addEventListener('click', function() {
+                markerFormOverlay.style.display = 'none';
                 markerForm.reset();
+            });
+
+            closeGeofenceForm.addEventListener('click', function() {
+                geofenceFormOverlay.style.display = 'none';
                 geofenceForm.reset();
+            });
+
+            closeMessageForm.addEventListener('click', function() {
+                messageFormOverlay.style.display = 'none';
                 messageForm.reset();
             });
 
-            // Close form overlay on outside click
-            formOverlay.addEventListener('click', function(e) {
-                if (e.target === formOverlay) {
-                    formOverlay.style.display = 'none';
-                    // Reset forms if needed
+         
+            markerFormOverlay.addEventListener('click', function(e) {
+                if (e.target === markerFormOverlay) {
+                    markerFormOverlay.style.display = 'none';
                     markerForm.reset();
-                    geofenceForm.reset();
-                    messageForm.reset();
                 }
             });
 
-          
+            geofenceFormOverlay.addEventListener('click', function(e) {
+                if (e.target === geofenceFormOverlay) {
+                    geofenceFormOverlay.style.display = 'none';
+                    geofenceForm.reset();
+                }
+            });
+
+            messageFormOverlay.addEventListener('click', function(e) {
+                if (e.target === messageFormOverlay) {
+                    messageFormOverlay.style.display = 'none';
+                    messageForm.reset();
+                }
+            });
         });
     </script>
-     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" integrity="sha512-2gqQd+G4Z4R8tzt4QkAxN5g4b6clzTqBQ0W7JqVddOF9uJfq3FDGkxLJWqWgPIn23dc4iymwKXfl7FhCTWR/MA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-     <script src="/socket.io/socket.io.js"></script>
-     <script src="/js/script.js"></script>
- 
 </body>
 </html>
-

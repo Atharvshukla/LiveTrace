@@ -34,3 +34,50 @@ body {
     background-color: #4CAF50; 
     color: white;
 }
+
+nav {
+    background: #333;
+    padding: 10px;
+    display: flex;
+    justify-content: space-around;
+}
+
+nav button {
+    background: #444;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+nav button:hover {
+    background: #555;
+}
+
+.banner {
+    background: #f4f4f4;
+    padding: 20px;
+    margin: 10px 0;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+form label,
+form input,
+form button {
+    margin: 5px 0;
+}
+
+#map {
+    height: 400px;
+    margin-top: 10px;
+}
+
+#status,
+#geofence-alert,
+#messages {
+    margin-top: 10px;
+}
