@@ -97,6 +97,9 @@
             <li><a href="#" id="send-message-link">Chat</a></li>
             <li><a href="#" id="report-incident-link">Report Incident</a></li>
             <li><a href="#" id="view-incidents-link">View Incidents</a></li>
+            <li><a href="#" id="allocate-resources-link">Allocate Resources</a></li>
+        </ul>
+            
         </ul>
     </nav>
 
@@ -157,6 +160,18 @@
             <span class="form-close" id="closeIncidentList">&times;</span>
             <h2>Reported Incidents</h2>
             <div id="incident-list"></div>
+        </div>
+    </div>
+    <div class="form-overlay" id="resourceAllocationOverlay">
+        <div class="form-container">
+            <span class="form-close" id="closeResourceAllocation">&times;</span>
+            <form id="resourceAllocationForm" class="form-section">
+                <input type="text" id="resource-type" placeholder="Resource Type" required>
+                <input type="number" id="resource-quantity" placeholder="Resource Quantity" required>
+                <input type="number" id="resource-lat" placeholder="Latitude" step="any" required>
+                <input type="number" id="resource-lng" placeholder="Longitude" step="any" required>
+                <button type="submit">Allocate Resources</button>
+            </form>
         </div>
     </div>
 
