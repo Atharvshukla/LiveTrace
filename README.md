@@ -32,7 +32,7 @@ LiveTrace
     - Open your browser and navigate to `http://localhost:3000`
 
 # Usage
-  - Set your username and start sharing your location in real-time
+  - Set your username and start sharing your location
   - Report incidents and view reported incidents on the map
   - Set geofences and receive alerts for specified areas
   - Send and receive real-time messages with other users
