@@ -7,18 +7,25 @@
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" integrity="sha512-h9FcoyWjHcOcmEVkxOfTLnmZFWIH0iZhZT1H2TbOq55xssQGEJHEaIm+PgoUaZbRvQTNTluNOEfb1ZRy6D3BOw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
-        /* Additional CSS for responsive navigation */
+        /* Dark theme with interactive effects */
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+        }
+
         nav {
-            background-color: #4CAF50;
+            background-color: #1f1f1f;
             padding: 1em;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            border-bottom: 2px solid #4CAF50;
         }
 
         nav h1 {
             margin: 0;
-            color: white;
+            color: #4CAF50;
         }
 
         nav ul {
@@ -34,21 +41,25 @@
         }
 
         nav a {
-            color: white;
+            color: #ffffff;
             text-decoration: none;
             font-size: 1.2em;
             padding: 0.5em 1em;
             border-radius: 5px;
-            transition: background-color 0.3s, color 0.3s;
+            transition: background-color 0.3s, color 0.3s, transform 0.3s;
         }
 
         nav a:hover {
             background-color: #45a049; 
+            transform: scale(1.05);
         }
 
         #map {
             height: 500px;
             width: 100%;
+            border: 2px solid #4CAF50;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            margin-top: 1em;
         }
 
         .form-overlay {
@@ -60,18 +71,20 @@
             display: none;
             justify-content: center;
             align-items: center;
-            background-color: rgba(0, 0, 0, 0.5); 
+            background-color: rgba(0, 0, 0, 0.7); 
             z-index: 1000; 
         }
 
         .form-container {
-            background-color: white;
+            background-color: #1f1f1f;
             padding: 20px;
             border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
             width: 50%;
             max-width: 600px;
             text-align: center;
+            color: #ffffff;
+            position: relative;
         }
 
         .form-section {
@@ -85,6 +98,40 @@
             cursor: pointer;
             font-size: 1.2em;
             color: #888;
+            transition: color 0.3s;
+        }
+
+        .form-close:hover {
+            color: #ffffff;
+        }
+
+        .form-container input, .form-container button {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border: 1px solid #4CAF50;
+            background-color: #2e2e2e;
+            color: #ffffff;
+            transition: background-color 0.3s, border 0.3s, transform 0.3s;
+        }
+
+        .form-container input:focus, .form-container button:hover {
+            background-color: #3f3f3f;
+            border: 1px solid #45a049;
+            transform: scale(1.05);
+        }
+
+        .form-container button {
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: #ffffff;
+        }
+
+        #geofence-alert, #status {
+            color: #4CAF50;
+            margin: 1em 0;
+            text-align: center;
         }
     </style>
 </head>
@@ -98,8 +145,6 @@
             <li><a href="#" id="report-incident-link">Report Incident</a></li>
             <li><a href="#" id="view-incidents-link">View Incidents</a></li>
             <li><a href="#" id="allocate-resources-link">Allocate Resources</a></li>
-        </ul>
-            
         </ul>
     </nav>
 
@@ -128,7 +173,7 @@
         </div>
     </div>
 
-    
+    <!-- Message form overlay -->
     <div class="form-overlay" id="messageFormOverlay">
         <div class="form-container">
             <span class="form-close" id="closeMessageForm">&times;</span>
@@ -141,7 +186,7 @@
         </div>
     </div>
 
-
+    <!-- Incident form overlay -->
     <div class="form-overlay" id="incidentFormOverlay">
         <div class="form-container">
             <span class="form-close" id="closeIncidentForm">&times;</span>
@@ -154,14 +199,16 @@
         </div>
     </div>
 
-
+    <!-- Incident list overlay -->
     <div class="form-overlay" id="incidentListOverlay">
         <div class="form-container">
             <span class="form-close" id="closeIncidentList">&times;</span>
-            <h2>Reported Incident</h2>
+            <h2>Reported Incidents</h2>
             <div id="incident-list"></div>
         </div>
     </div>
+
+    <!-- Resource allocation overlay -->
     <div class="form-overlay" id="resourceAllocationOverlay">
         <div class="form-container">
             <span class="form-close" id="closeResourceAllocation">&times;</span>
@@ -185,30 +232,33 @@
     <script src="/js/script.js"></script>
 
     <script>
-     
         document.addEventListener('DOMContentLoaded', function() {
             const markerFormOverlay = document.getElementById('markerFormOverlay');
             const geofenceFormOverlay = document.getElementById('geofenceFormOverlay');
             const messageFormOverlay = document.getElementById('messageFormOverlay');
             const incidentFormOverlay = document.getElementById('incidentFormOverlay');
             const incidentListOverlay = document.getElementById('incidentListOverlay');
+            const resourceAllocationOverlay = document.getElementById('resourceAllocationOverlay');
 
             const closeMarkerForm = document.getElementById('closeMarkerForm');
             const closeGeofenceForm = document.getElementById('closeGeofenceForm');
             const closeMessageForm = document.getElementById('closeMessageForm');
             const closeIncidentForm = document.getElementById('closeIncidentForm');
             const closeIncidentList = document.getElementById('closeIncidentList');
+            const closeResourceAllocation = document.getElementById('closeResourceAllocation');
 
             const setMarkerLink = document.getElementById('set-marker-link');
             const setGeofenceLink = document.getElementById('set-geofence-link');
             const sendMessageLink = document.getElementById('send-message-link');
             const reportIncidentLink = document.getElementById('report-incident-link');
             const viewIncidentsLink = document.getElementById('view-incidents-link');
+            const allocateResourcesLink = document.getElementById('allocate-resources-link');
 
             const markerForm = document.getElementById('markerForm');
             const geofenceForm = document.getElementById('geofenceForm');
             const messageForm = document.getElementById('messageForm');
             const incidentForm = document.getElementById('incidentForm');
+            const resourceAllocationForm = document.getElementById('resourceAllocationForm');
 
             setMarkerLink.addEventListener('click', function(event) {
                 event.preventDefault();
@@ -236,6 +286,11 @@
                 displayReportedIncidents(); 
             });
 
+            allocateResourcesLink.addEventListener('click', function(event) {
+                event.preventDefault();
+                resourceAllocationOverlay.style.display = 'flex';
+            });
+
             closeMarkerForm.addEventListener('click', function() {
                 markerFormOverlay.style.display = 'none';
             });
@@ -256,37 +311,44 @@
                 incidentListOverlay.style.display = 'none';
             });
 
+            closeResourceAllocation.addEventListener('click', function() {
+                resourceAllocationOverlay.style.display = 'none';
+            });
+
             markerForm.addEventListener('submit', function(event) {
                 event.preventDefault();
-            
+                // Add marker logic
                 markerFormOverlay.style.display = 'none';
             });
 
             geofenceForm.addEventListener('submit', function(event) {
                 event.preventDefault();
-             
+                // Add geofence logic
                 geofenceFormOverlay.style.display = 'none';
             });
 
             messageForm.addEventListener('submit', function(event) {
                 event.preventDefault();
-             
+                // Send message logic
                 messageFormOverlay.style.display = 'none';
             });
 
             incidentForm.addEventListener('submit', function(event) {
                 event.preventDefault();
-              
                 reportIncident();
                 incidentFormOverlay.style.display = 'none';
+            });
+
+            resourceAllocationForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+                // Allocate resources logic
+                resourceAllocationOverlay.style.display = 'none';
             });
 
             function reportIncident() {
                 const lat = document.getElementById('incident-lat').value;
                 const lng = document.getElementById('incident-lng').value;
                 const description = document.getElementById('incident-description').value;
-
-               
                 const socket = io();
                 socket.emit('reportIncident', { lat, lng, description });
             }
@@ -294,11 +356,8 @@
             function displayReportedIncidents() {
                 const incidentList = document.getElementById('incident-list');
                 incidentList.innerHTML = ''; 
-
-              
                 const socket = io();
                 socket.emit('getReportedIncidents');
-
                 socket.on('reportedIncidents', function(incidents) {
                     incidents.forEach(function(incident) {
                         const listItem = document.createElement('div');
