@@ -10,6 +10,7 @@ app.set('view engine', 'ejs');
 app.use(express.static(path.join(__dirname, 'public')));
 
 const users = {};
+const incidents = []; // Store incidents
 
 io.on('connection', function (socket) {
     socket.on('set-username', function (username) {
@@ -23,6 +24,15 @@ io.on('connection', function (socket) {
 
     socket.on("send-message", function (data) {
         io.emit("receive-message", data);
+    });
+
+    socket.on("reportIncident", function (incident) {
+        incidents.push(incident); // Save the incident
+        io.emit('incidentReported', incident); // Notify all clients
+    });
+
+    socket.on('getReportedIncidents', function () {
+        socket.emit('reportedIncidents', incidents); // Send all reported incidents to the requester
     });
 
     socket.on("disconnect", function () {

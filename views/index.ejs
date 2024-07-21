@@ -195,7 +195,6 @@
                 <input type="number" id="incident-lng" placeholder="Incident Longitude" step="any" required>
                 <input type="text" id="incident-description" placeholder="Incident Description" required>
                 <button type="submit" id="report-incident">Report Incident</button>
-                 <div id="incident-list"></div>
             </form>
         </div>
     </div>
@@ -206,7 +205,7 @@
             <span class="form-close" id="closeIncidentList">&times;</span>
             <h2>Reported Incidents</h2>
             <div id="incident-list"></div>
-            <div id="messages"></div>
+            
         </div>
     </div>
 
@@ -235,140 +234,153 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const markerFormOverlay = document.getElementById('markerFormOverlay');
-            const geofenceFormOverlay = document.getElementById('geofenceFormOverlay');
-            const messageFormOverlay = document.getElementById('messageFormOverlay');
-            const incidentFormOverlay = document.getElementById('incidentFormOverlay');
-            const incidentListOverlay = document.getElementById('incidentListOverlay');
-            const resourceAllocationOverlay = document.getElementById('resourceAllocationOverlay');
+           
+            let marker, geofenceCircle;
 
-            const closeMarkerForm = document.getElementById('closeMarkerForm');
-            const closeGeofenceForm = document.getElementById('closeGeofenceForm');
-            const closeMessageForm = document.getElementById('closeMessageForm');
-            const closeIncidentForm = document.getElementById('closeIncidentForm');
-            const closeIncidentList = document.getElementById('closeIncidentList');
-            const closeResourceAllocation = document.getElementById('closeResourceAllocation');
-
-            const setMarkerLink = document.getElementById('set-marker-link');
-            const setGeofenceLink = document.getElementById('set-geofence-link');
-            const sendMessageLink = document.getElementById('send-message-link');
-            const reportIncidentLink = document.getElementById('report-incident-link');
-            const viewIncidentsLink = document.getElementById('view-incidents-link');
-            const allocateResourcesLink = document.getElementById('allocate-resources-link');
-
-            const markerForm = document.getElementById('markerForm');
-            const geofenceForm = document.getElementById('geofenceForm');
-            const messageForm = document.getElementById('messageForm');
-            const incidentForm = document.getElementById('incidentForm');
-            const resourceAllocationForm = document.getElementById('resourceAllocationForm');
-
-            setMarkerLink.addEventListener('click', function(event) {
-                event.preventDefault();
-                markerFormOverlay.style.display = 'flex';
+            // Show marker form
+            document.getElementById('set-marker-link').addEventListener('click', () => {
+                document.getElementById('markerFormOverlay').style.display = 'flex';
             });
 
-            setGeofenceLink.addEventListener('click', function(event) {
-                event.preventDefault();
-                geofenceFormOverlay.style.display = 'flex';
+            // Close marker form
+            document.getElementById('closeMarkerForm').addEventListener('click', () => {
+                document.getElementById('markerFormOverlay').style.display = 'none';
             });
 
-            sendMessageLink.addEventListener('click', function(event) {
-                event.preventDefault();
-                messageFormOverlay.style.display = 'flex';
+            // Handle marker form submission
+            document.getElementById('markerForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const lat = parseFloat(document.getElementById('lat').value);
+                const lng = parseFloat(document.getElementById('lng').value);
+                if (marker) {
+                    marker.setLatLng([lat, lng]);
+                } else {
+                    marker = L.marker([lat, lng]).addTo(map);
+                }
+                map.setView([lat, lng], 13);
+                document.getElementById('markerFormOverlay').style.display = 'none';
             });
 
-            reportIncidentLink.addEventListener('click', function(event) {
-                event.preventDefault();
-                incidentFormOverlay.style.display = 'flex';
+            // Show geofence form
+            document.getElementById('set-geofence-link').addEventListener('click', () => {
+                document.getElementById('geofenceFormOverlay').style.display = 'flex';
             });
 
-            viewIncidentsLink.addEventListener('click', function(event) {
-                event.preventDefault();
-                incidentListOverlay.style.display = 'flex';
-                displayReportedIncidents(); 
+            // Close geofence form
+            document.getElementById('closeGeofenceForm').addEventListener('click', () => {
+                document.getElementById('geofenceFormOverlay').style.display = 'none';
             });
 
-            allocateResourcesLink.addEventListener('click', function(event) {
-                event.preventDefault();
-                resourceAllocationOverlay.style.display = 'flex';
+            // Handle geofence form submission
+            document.getElementById('geofenceForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const lat = parseFloat(document.getElementById('geofence-lat').value);
+                const lng = parseFloat(document.getElementById('geofence-lng').value);
+                const radius = parseFloat(document.getElementById('geofence-radius').value);
+                if (geofenceCircle) {
+                    geofenceCircle.setLatLng([lat, lng]).setRadius(radius);
+                } else {
+                    geofenceCircle = L.circle([lat, lng], {
+                        color: '#ff0000',
+                        fillColor: '#ff0000',
+                        fillOpacity: 0.2,
+                        radius: radius
+                    }).addTo(map);
+                }
+                document.getElementById('geofenceFormOverlay').style.display = 'none';
             });
 
-            closeMarkerForm.addEventListener('click', function() {
-                markerFormOverlay.style.display = 'none';
+            // Show message form
+            document.getElementById('send-message-link').addEventListener('click', () => {
+                document.getElementById('messageFormOverlay').style.display = 'flex';
             });
 
-            closeGeofenceForm.addEventListener('click', function() {
-                geofenceFormOverlay.style.display = 'none';
+            // Close message form
+            document.getElementById('closeMessageForm').addEventListener('click', () => {
+                document.getElementById('messageFormOverlay').style.display = 'none';
             });
 
-            closeMessageForm.addEventListener('click', function() {
-                messageFormOverlay.style.display = 'none';
+            // Handle message form submission
+            document.getElementById('messageForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const message = document.getElementById('message').value;
+                socket.emit('send-message', { text: message });
+                document.getElementById('message').value = '';
             });
 
-            closeIncidentForm.addEventListener('click', function() {
-                incidentFormOverlay.style.display = 'none';
+            // Receive and display messages
+            socket.on('receive-message', (data) => {
+                const messageDiv = document.createElement('div');
+                messageDiv.textContent = data.text;
+                document.getElementById('messages').appendChild(messageDiv);
             });
 
-            closeIncidentList.addEventListener('click', function() {
-                incidentListOverlay.style.display = 'none';
+            // Show incident form
+            document.getElementById('report-incident-link').addEventListener('click', () => {
+                document.getElementById('incidentFormOverlay').style.display = 'flex';
             });
 
-            closeResourceAllocation.addEventListener('click', function() {
-                resourceAllocationOverlay.style.display = 'none';
+            // Close incident form
+            document.getElementById('closeIncidentForm').addEventListener('click', () => {
+                document.getElementById('incidentFormOverlay').style.display = 'none';
             });
 
-            markerForm.addEventListener('submit', function(event) {
-                event.preventDefault();
-                // Add marker logic
-                markerFormOverlay.style.display = 'none';
-            });
-
-            geofenceForm.addEventListener('submit', function(event) {
-                event.preventDefault();
-                // Add geofence logic
-                geofenceFormOverlay.style.display = 'none';
-            });
-
-            messageForm.addEventListener('submit', function(event) {
-                event.preventDefault();
-                // Send message logic
-                messageFormOverlay.style.display = 'none';
-            });
-
-            incidentForm.addEventListener('submit', function(event) {
-                event.preventDefault();
-                reportIncident();
-                incidentFormOverlay.style.display = 'none';
-            });
-
-            resourceAllocationForm.addEventListener('submit', function(event) {
-                event.preventDefault();
-                // Allocate resources logic
-                resourceAllocationOverlay.style.display = 'none';
-            });
-
-            function reportIncident() {
-                const lat = document.getElementById('incident-lat').value;
-                const lng = document.getElementById('incident-lng').value;
+            // Handle incident form submission
+            document.getElementById('incidentForm').addEventListener('submit', (e) => {
+                e.preventDefault();
                 const description = document.getElementById('incident-description').value;
-                const socket = io();
-                socket.emit('reportIncident', { lat, lng, description });
-            }
+                const lat = parseFloat(document.getElementById('incident-lat').value);
+                const lng = parseFloat(document.getElementById('incident-lng').value);
+                socket.emit('reportIncident', { description, lat, lng });
+                document.getElementById('incident-description').value = '';
+                document.getElementById('incident-lat').value = '';
+                document.getElementById('incident-lng').value = '';
+                document.getElementById('incidentFormOverlay').style.display = 'none';
+            });
 
-            function displayReportedIncidents() {
-                const incidentList = document.getElementById('incident-list');
-                incidentList.innerHTML = ''; 
-                const socket = io();
+            // Show incidents list
+            document.getElementById('view-incidents-link').addEventListener('click', () => {
+                document.getElementById('incidentListOverlay').style.display = 'flex';
                 socket.emit('getReportedIncidents');
-                socket.on('reportedIncidents', function(incidents) {
-                    incidents.forEach(function(incident) {
-                        const listItem = document.createElement('div');
-                        listItem.textContent = `Location: (${incident.lat}, ${incident.lng}), Description: ${incident.description}`;
-                        incidentList.appendChild(listItem);
-                    });
+            });
+
+            // Close incidents list
+            document.getElementById('closeIncidentList').addEventListener('click', () => {
+                document.getElementById('incidentListOverlay').style.display = 'none';
+            });
+
+            // Display reported incidents
+            socket.on('reportedIncidents', function (incidents) {
+                const incidentList = document.getElementById('incident-list');
+                incidentList.innerHTML = ''; // Clear existing list
+                incidents.forEach(function (incident) {
+                    const listItem = document.createElement('div');
+                    listItem.textContent = `Location: (${incident.lat}, ${incident.lng}), Description: ${incident.description}`;
+                    incidentList.appendChild(listItem);
                 });
-            }
+            });
+
+            // Display received location
+            socket.on('receive-location', function (data) {
+                if (marker) {
+                    marker.setLatLng([data.lat, data.lng]);
+                } else {
+                    marker = L.marker([data.lat, data.lng]).addTo(map);
+                }
+                map.setView([data.lat, data.lng], 13);
+            });
+
+            // Handle geofence alert
+            socket.on('geofence-alert', function (message) {
+                document.getElementById('geofence-alert').textContent = message;
+            });
+
+            // Handle status update
+            socket.on('update-status', function (status) {
+                document.getElementById('status').textContent = status;
+            });
         });
+        
     </script>
 </body>
 </html>
