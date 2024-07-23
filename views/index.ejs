@@ -54,6 +54,35 @@
             transform: scale(1.05);
         }
 
+        #menu-button {
+            display: none;
+            font-size: 1.5em;
+            background: none;
+            border: none;
+            color: #4CAF50;
+            cursor: pointer;
+        }
+
+        #nav-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        #nav-overlay ul {
+            display: flex;
+            flex-direction: column;
+            gap: 1em;
+            text-align: center;
+        }
+
         #map {
             height: 500px;
             width: 100%;
@@ -133,11 +162,31 @@
             margin: 1em 0;
             text-align: center;
         }
+
+        @media (max-width: 600px) {
+            nav ul {
+                display: none;
+            }
+
+            #menu-button {
+                display: block;
+            }
+
+            #nav-overlay {
+                display: none;
+                flex-direction: column;
+            }
+
+            #nav-overlay ul {
+                gap: 1.5em;
+            }
+        }
     </style>
 </head>
 <body>
     <nav>
         <h1>LiveTrace</h1>
+        <button id="menu-button">&#9776;</button>
         <ul>
             <li><a href="#" id="set-marker-link">Set Marker</a></li>
             <li><a href="#" id="set-geofence-link">Set Geofence</a></li>
@@ -147,6 +196,18 @@
             <li><a href="#" id="allocate-resources-link">Allocate Resources</a></li>
         </ul>
     </nav>
+
+    <div id="nav-overlay">
+        <ul>
+            <li><a href="#" id="nav-close">&times;</a></li>
+            <li><a href="#" id="set-marker-link-overlay">Set Marker</a></li>
+            <li><a href="#" id="set-geofence-link-overlay">Set Geofence</a></li>
+            <li><a href="#" id="send-message-link-overlay">Chat</a></li>
+            <li><a href="#" id="report-incident-link-overlay">Report Incident</a></li>
+            <li><a href="#" id="view-incidents-link-overlay">View Incidents</a></li>
+            <li><a href="#" id="allocate-resources-link-overlay">Allocate Resources</a></li>
+        </ul>
+    </div>
 
     <!-- Marker form overlay -->
     <div class="form-overlay" id="markerFormOverlay">
@@ -205,7 +266,7 @@
             <span class="form-close" id="closeIncidentList">&times;</span>
             <h2>Reported Incidents</h2>
             <div id="incident-list"></div>
-            
+            <div id="messages"></div>
         </div>
     </div>
 
@@ -236,6 +297,24 @@
         document.addEventListener('DOMContentLoaded', function() {
            
             let marker, geofenceCircle;
+
+            const menuButton = document.getElementById("menu-button");
+    const navOverlay = document.getElementById("nav-overlay");
+    const navClose = document.getElementById("nav-close");
+
+    menuButton.addEventListener("click", function() {
+        navOverlay.style.display = "flex";
+    });
+
+    navClose.addEventListener("click", function() {
+        navOverlay.style.display = "none";
+    });
+
+    navOverlay.addEventListener("click", function(event) {
+        if (event.target === navOverlay) {
+            navOverlay.style.display = "none";
+        }
+    });
 
             // Show marker form
             document.getElementById('set-marker-link').addEventListener('click', () => {
