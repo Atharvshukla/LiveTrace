@@ -16,8 +16,8 @@ LiveTrace
 # Features
   - Real-time location tracking using Socket.io
   - Live incident reporting and visualization
-  - Resourse Allocation for incident reported
-  - User authentication and status updates
+  - Resource allocation to the incident reported
+  - User authentication and status update
   - Interactive map with geofencing and alerts
   - Real-time messaging between users
 
