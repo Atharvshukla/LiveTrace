@@ -81,3 +81,58 @@ form button {
 #messages {
     margin-top: 10px;
 }
+/* Welcome Banner Styles */
+#welcome-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: rgba(31, 31, 31, 0.95); /* Slightly transparent dark background */
+    color: #ffffff;
+    text-align: center;
+    padding: 20px;
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    transition: top 0.3s ease-in-out; /* Smooth slide-out effect */
+}
+
+.banner-content {
+    position: relative;
+    max-width: 600px;
+    padding: 20px;
+    background-color: #1f1f1f;
+    border-radius: 5px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+}
+
+.banner-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 1.5em;
+    cursor: pointer;
+    color: #888;
+    transition: color 0.3s;
+}
+
+.banner-close:hover {
+    color: #ffffff;
+}
+
+#welcome-banner h2 {
+    margin: 0;
+    color: #4CAF50; /* Green color to match the theme */
+}
+
+#welcome-banner p {
+    margin-top: 10px;
+    font-size: 1.1em;
+}
+
+/* Hide banner by moving it off-screen */
+#welcome-banner.hidden {
+    top: -100%;
+}

@@ -163,6 +163,37 @@
             margin: 1em 0;
             text-align: center;
         }
+     
+#username {
+    width: 80%; /* Adjust width to fit well within different screen sizes */
+    max-width: 400px; /* Maximum width to ensure it doesn't get too large on wide screens */
+    padding: 12px 20px; /* Increase padding for better touch targets */
+    margin: 20px auto; /* Center the input field with top margin */
+    display: block; /* Ensure the input is centered by treating it as a block element */
+    font-size: 1.2em; /* Increase font size for readability */
+    color: #ffffff; /* White text color to stand out on dark background */
+    background-color: #2e2e2e; /* Dark background for consistency with theme */
+    border: 2px solid #4CAF50; /* Green border to match theme */
+    border-radius: 5px; /* Smooth rounded corners */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* Add a subtle shadow for depth */
+    transition: background-color 0.3s, border-color 0.3s, box-shadow 0.3s, transform 0.3s; /* Smooth transitions */
+}
+
+#username:focus {
+    background-color: #3f3f3f; /* Darker background when focused */
+    border-color: #45a049; /* Lighter green border on focus */
+    box-shadow: 0 0 15px rgba(0, 128, 0, 0.7); /* More prominent shadow on focus */
+    transform: scale(1.02); /* Slight scale up on focus */
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    #username {
+        width: 90%; /* Wider input on smaller screens */
+        font-size: 1em; /* Slightly reduce font size for better fit */
+    }
+}
+
 
         @media (max-width: 600px) {
             nav ul {
@@ -185,6 +216,13 @@
     </style>
 </head>
 <body>
+    <div id="welcome-banner">
+        <div class="banner-content">
+            <span class="banner-close" id="close-banner">&times;</span>
+            <h2>Welcome to LiveTrace!</h2>
+            <p>We're excited to have you here. Explore the site and discover our features.</p>
+        </div>
+    </div>
     <nav>
         <h1>LiveTrace</h1>
         <button id="menu-button">&#9776;</button>
@@ -296,7 +334,11 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-           
+            const closeBannerButton = document.getElementById('close-banner');
+            const welcomeBanner = document.getElementById('welcome-banner');
+        closeBannerButton.addEventListener('click', function() {
+        welcomeBanner.classList.add('hidden'); // Add the hidden class to slide the banner up
+    });
             let marker, geofenceCircle;
 
             const menuButton = document.getElementById("menu-button");
