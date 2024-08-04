@@ -23,7 +23,7 @@ LiveTrace
 
 # Getting Started
   prerequisites:
-    - Node.js (v14 or higher)
+    - Node.js 
     - npm (v6 or higher)
   setup:
     - Clone the repository: `git clone https://github.com/atharvshukla/LiveTrace.git`
